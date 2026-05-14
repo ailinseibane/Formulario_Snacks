@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snack Fan — Pedidos Mayoristas</title>
+  <meta name="description" content="Formulario de pedidos mayoristas — Snack Fan Distribuidora">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="header">
+    <img src="https://acdn-us.mitiendanube.com/stores/005/821/939/themes/common/logo-1951200950-1739356298-6be1913107e967b9582522cb6ccf771a1739356298.png?0"
+         alt="Snack Fan" class="logo-img">
+    <p class="header-tagline">Precios mayoristas para todos!</p>
+  </header>
+
+  <!-- ── Formulario ──────────────────────────────────────────── -->
+  <main class="main">
+    <form id="pedidoForm" novalidate>
+
+      <!-- Datos del cliente -->
+      <section class="card">
+        <h2 class="card-title">Datos del cliente</h2>
+        <div class="form-grid">
+
+          <div class="field required">
+            <label for="nombre">Nombre y apellido</label>
+            <input type="text" id="nombre" name="nombre"
+                   placeholder="Tu nombre completo" autocomplete="name">
+          </div>
+
+          <div class="field">
+            <label for="telefono">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono"
+                   placeholder="Ej: 1155667788" autocomplete="tel">
+          </div>
+
+          <div class="field full-width">
+            <label for="direccion">Dirección</label>
+            <input type="text" id="direccion" name="direccion"
+                   placeholder="Calle, número, ciudad" autocomplete="street-address">
+          </div>
+
+          <div class="field full-width">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" rows="3"
+                      placeholder="Horario de entrega, aclaraciones, etc."></textarea>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Productos (se renderizan dinámicamente) -->
+      <div id="productosContenedor"></div>
+
+      <!-- Resumen + Enviar -->
+      <div class="submit-section">
+        <div id="resumen" class="resumen hidden"></div>
+        <button type="submit" id="btnEnviar" class="btn-submit">
+          Enviar Pedido
+        </button>
+      </div>
+
+    </form>
+
+    <footer class="footer">
+      Snack Fan Distribuidora &nbsp;·&nbsp; Los pedidos se confirman a la brevedad
+    </footer>
+  </main>
+
+  <!-- ── Modal de éxito ──────────────────────────────────────── -->
+  <div id="successModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-icon">✓</div>
+      <h2>¡Pedido enviado!</h2>
+      <p>Tu código de pedido es:</p>
+      <div class="order-code" id="orderCode"></div>
+      <p class="modal-sub">Nos contactaremos a la brevedad para confirmar.</p>
+      <button class="btn-new" onclick="cerrarModal()">Hacer otro pedido</button>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
