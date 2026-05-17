@@ -177,12 +177,24 @@ async function handleSubmit(e) {
   e.preventDefault();
   limpiarErrores();
 
-  const nombre    = document.getElementById('nombre').value.trim();
-  const productos = obtenerProductosPedido();
-  let valido      = true;
+  const nombre       = document.getElementById('nombre').value.trim();
+  const telefono     = document.getElementById('telefono').value.trim();
+  const tipo_entrega = document.getElementById('tipo_entrega').value;
+  const productos    = obtenerProductosPedido();
+  let valido         = true;
 
   if (!nombre) {
     mostrarErrorCampo('nombre', 'El nombre es obligatorio.');
+    valido = false;
+  }
+
+  if (!telefono) {
+    mostrarErrorCampo('telefono', 'El teléfono es obligatorio.');
+    valido = false;
+  }
+
+  if (!tipo_entrega) {
+    mostrarErrorCampo('tipo_entrega', 'Seleccioná el tipo de entrega.');
     valido = false;
   }
 
@@ -203,7 +215,8 @@ async function handleSubmit(e) {
 
   const payload = {
     nombre,
-    telefono:      document.getElementById('telefono').value.trim(),
+    telefono,
+    tipo_entrega,
     direccion:     document.getElementById('direccion').value.trim(),
     observaciones: document.getElementById('observaciones').value.trim(),
     productos,

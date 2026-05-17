@@ -31,10 +31,20 @@
                    placeholder="Tu nombre completo" autocomplete="name">
           </div>
 
-          <div class="field">
+          <div class="field required">
             <label for="telefono">Teléfono</label>
             <input type="tel" id="telefono" name="telefono"
                    placeholder="Ej: 1155667788" autocomplete="tel">
+          </div>
+
+          <div class="field required">
+            <label for="tipo_entrega">Tipo de entrega</label>
+            <select id="tipo_entrega" name="tipo_entrega">
+              <option value="">— Seleccioná una opción —</option>
+              <option value="Envío con reparto">Envío con reparto</option>
+              <option value="Retira por depósito">Retira por depósito</option>
+              <option value="A coordinar">A coordinar</option>
+            </select>
           </div>
 
           <div class="field full-width">

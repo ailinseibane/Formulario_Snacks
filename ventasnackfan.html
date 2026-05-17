@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle de Pedido</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 40px;
+      background: #f4f4f8;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      height: 80px;
+    }
+    h1 {
+      text-align: center;
+      color: #2b2d42;
+      margin-bottom: 10px;
+    }
+    .info {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    .info div {
+      margin: 5px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+      text-align: left;
+    }
+    th {
+      background-color: #e0e0e0;
+    }
+    .total {
+      text-align: right;
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .observaciones {
+      margin-top: 20px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+<img src="https://acdn-us.mitiendanube.com/stores/005/821/939/themes/common/logo-1951200950-1739356298-6be1913107e967b9582522cb6ccf771a1739356298.png?0" alt="Logo">
+    </div>
+
+    <h1>DETALLE DE PEDIDO</h1>
+
+    <div class="info">
+      <div>📅 <strong>Fecha:</strong> <span id="Fecha"></span></div>
+      <div>👤 <strong>Cliente:</strong> <span id="Cliente"></span></div>
+      <div>🗺️ <strong>Domicilio de entrega:</strong> <span id="Domicilio"></span></div>
+      <div>📞 <strong>Teléfono:</strong> <span id="Telefono"></span></div>
+      <div>📦 <strong>Estado:</strong> <span id="Estado"></span></div>
+      <div>🚚 <strong>Tipo de entrega:</strong> <span id="TipoEntrega"></span></div>
+      <div>🧾 <strong>Forma de pago:</strong> <span id="FormaPago"></span></div>
+      <div>🧑‍💼 <strong>Vendedor:</strong> <span id="Vendedor"></span></div>
+    </div>
+
+    <div class="observaciones"><strong>📝 Observaciones:</strong> <span id="Observaciones"></span></div>
+
+    <table id="tabla-productos">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Descripción</th>
+          <th>Cant.</th>
+          <th>Precio unitario</th>
+          <th>Desc.</th>
+          <th>Precio final</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="total">💰 Total pedido: $<span id="TotalPedido"></span></div>
+
+    <div style="margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; text-align: center; font-size: 12px; color: #888; font-style: italic;">
+      Documento no válido como factura
+    </div>
+  </div>
+
+  <script>
+    function getURLParameter(name) {
+      return decodeURIComponent(
+        (new RegExp('[?|&]' + name + '=' +
+          '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1]
+          .replace(/\+/g, '%20')) || null;
+    }
+
+    function getParamArray(name) {
+      const raw = getURLParameter(name);
+      return raw ? raw.split(",") : [];
+    }
+
+    document.getElementById("Fecha").innerText = getURLParameter("fecha");
+    document.getElementById("Cliente").innerText = getURLParameter("cliente");
+    document.getElementById("Estado").innerText = getURLParameter("estado");
+    document.getElementById("Observaciones").innerText = getURLParameter("observaciones");
+    document.getElementById("TotalPedido").innerText = getURLParameter("total");
+    document.getElementById("Domicilio").innerText = getURLParameter("domicilio");
+    document.getElementById("Telefono").innerText = getURLParameter("telefono");
+    document.getElementById("TipoEntrega").innerText = getURLParameter("tipo_entrega");
+    document.getElementById("FormaPago").innerText = getURLParameter("forma_pago");
+    document.getElementById("Vendedor").innerText = getURLParameter("vendedor");
+
+    const codigos = getParamArray("codigos");
+    const descripciones = getParamArray("descripciones");
+    const cantidades = getParamArray("cantidades");
+    const preciosUnitarios = getParamArray("preciosUnitarios");
+    const descuentos = getParamArray("descuentos");
+    const preciosFinales = getParamArray("preciosFinales");
+
+    const tablaBody = document.querySelector("#tabla-productos tbody");
+
+    for (let i = 0; i < codigos.length; i++) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${codigos[i]}</td>
+        <td>${descripciones[i]}</td>
+        <td>${cantidades[i]}</td>
+        <td>$${preciosUnitarios[i]}</td>
+        <td>${descuentos[i]}%</td>
+        <td>$${preciosFinales[i]}</td>
+      `;
+      tablaBody.appendChild(row);
+    }
+  </script>
+</body>
+</html>

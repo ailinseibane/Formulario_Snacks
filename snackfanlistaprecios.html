@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Precios</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f0f2;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      height: 80px;
+    }
+
+    .contact-minidata {
+      font-size: 13px;
+      color: #666;
+      text-align: right;
+    }
+
+    .contact-minidata a {
+      color: #666;
+      text-decoration: none;
+    }
+
+    .header h1 {
+      text-align: center;
+      color: #800020;
+      font-size: 28px;
+      text-transform: uppercase;
+      margin-bottom: 30px;
+    }
+
+    .category {
+      margin-top: 40px;
+      page-break-inside: avoid;
+    }
+
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f7d9df;
+      padding: 10px 15px;
+      border-left: 6px solid #800020;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    .category-header h2 {
+      color: #800020;
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .category-header img {
+      height: 40px;
+    }
+
+    .product {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding: 16px 0;
+      gap: 24px;
+      page-break-inside: avoid;
+    }
+
+    .product img {
+      height: 90px;
+      width: 90px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f2f2f2;
+      border: 1px solid #ccc;
+    }
+
+    .product-info {
+      flex-grow: 1;
+    }
+
+    .product-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .product-description {
+      font-size: 13px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    .product-price {
+      color: #228c22;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  background: #25D366;
+  border-radius: 50%;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+.whatsapp-float img {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+.whatsapp-float:hover {
+  transform: scale(1.1);
+}
+
+@media print {
+  .whatsapp-float {
+    display: none;
+  }
+}
+
+
+    @media print {
+      body {
+        margin: 0;
+      }
+      .container {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 20px;
+      }
+      .topbar {
+        page-break-before: always;
+      }
+    }
+  </style>
+</head>
+  
+<body>
+  <a href="https://wa.me/5492364316825" class="whatsapp-float" target="_blank" aria-label="Contactar por WhatsApp">
+  <img src="https://cdn-icons-png.flaticon.com/512/220/220236.png" alt="WhatsApp" />
+</a>
+  <div class="container">
+    <div class="topbar">
+      <div class="logo">
+        <img src="https://acdn-us.mitiendanube.com/stores/005/821/939/themes/common/logo-1951200950-1739356298-6be1913107e967b9582522cb6ccf771a1739356298.png?0" alt="Snack Fan">
+      </div>
+      <div class="contact-minidata">
+        📞 236 4316825 · 📸 <a href="https://instagram.com/snackfanjunin" target="_blank">@snackfanjunin</a>
+      </div>
+    </div>
+
+    <div class="header">
+      <h1>Lista de precios <span id="Tipo"></span></h1>
+    </div>
+
+    <div id="contenido"></div>
+  </div>
+
+  <script>
+  const tipo = new URLSearchParams(window.location.search).get("tipo") || "MINORISTA";
+  document.getElementById("Tipo").innerText = tipo;
+
+  const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQZsx6ZE1gGg6vWsLWLjpUEDTfJxPa9ZYYjtlLT85N0OL-T3J0Q1LW8c0CBpufS3RXLRhWfH2lZTutU/pub?gid=1314104074&single=true&output=csv";
+
+  function getImageUrl(filename) {
+    return `https://www.appsheet.com/template/gettablefileurl?appName=Gestionstock-5955407&tableName=items&fileName=${encodeURIComponent(filename)}`;
+  }
+
+  function parsePrecio(valor) {
+    if (!valor) return 0;
+    return parseFloat(valor.replace(/"/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+  }
+
+  function parsePorcentaje(valor) {
+    if (!valor) return 0;
+    const limpio = valor.replace(/[^0-9.,-]/g, "").replace(",", ".");
+    return parseFloat(limpio) || 0;
+  }
+
+  fetch(sheetURL)
+    .then(response => response.text())
+    .then(csv => {
+      const lines = csv.split("\n").filter(r => r.trim() !== "");
+      const productos = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const [codigo, nombre, descripcion, imagen, categoria, proveedor, precioBaseStr, porcMayStr, porcMinStr] = lines[i].split(",");
+
+        const precioBase = parsePrecio(precioBaseStr);
+        const porcMay = parsePorcentaje(porcMayStr);
+        const porcMin = parsePorcentaje(porcMinStr);
+
+        const precioFinal = tipo === "MAYORISTA"
+          ? precioBase * (1 + porcMay / 100)
+          : precioBase * (1 + porcMin / 100);
+
+        console.log(`[${nombre}] Base: ${precioBase} | %${tipo}: ${tipo === "MAYORISTA" ? porcMay : porcMin} | Final: $${precioFinal.toFixed(2)}`);
+
+        productos.push({
+          codigo,
+          nombre,
+          descripcion,
+          imagen,
+          categoria,
+          proveedor,
+          precio: precioFinal.toFixed(2)
+        });
+      }
+
+      const grupo = {};
+      productos.forEach(p => {
+        if (!grupo[p.categoria]) grupo[p.categoria] = [];
+        grupo[p.categoria].push(p);
+      });
+
+      const contenido = document.getElementById("contenido");
+
+      for (const categoria in grupo) {
+        const bloque = document.createElement("div");
+        bloque.classList.add("category");
+        bloque.innerHTML = `
+          <div class="category-header">
+            <h2>${categoria}</h2>
+            <img src="https://acdn-us.mitiendanube.com/stores/005/821/939/themes/common/logo-1951200950-1739356298-6be1913107e967b9582522cb6ccf771a1739356298.png?0" alt="logo categoria">
+          </div>`;
+
+        grupo[categoria].forEach(p => {
+          bloque.innerHTML += `
+            <div class="product">
+              <img src="${getImageUrl(p.imagen)}" alt="${p.nombre}" onerror="this.src='https://via.placeholder.com/90x90?text=No+Img'">
+              <div class="product-info">
+                <div class="product-name">${p.nombre}</div>
+                ${p.descripcion ? `<div class="product-description">${p.descripcion}</div>` : ""}
+                <div class="product-price">$${p.precio}</div>
+              </div>
+            </div>
+          `;
+        });
+        contenido.appendChild(bloque);
+      }
+    });
+</script>
+
+</body>
+</html>

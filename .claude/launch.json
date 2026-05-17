@@ -4,7 +4,7 @@
     {
       "name": "snack-fan-preview",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "3456"],
+      "runtimeArgs": ["-m", "http.server", "3456", "--directory", "C:/Users/Usuario/Documents/GitHub/Formulario_Snacks"],
       "port": 3456
     }
   ]
