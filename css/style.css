@@ -182,11 +182,33 @@ body  {
 }
 
 .product-price {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 800;
   color: var(--red);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.product-price small {
+  font-size: 0.72rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+/* ── Fila cantidad + total ────────────────────────────────── */
+.product-qty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.product-row-total {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--red);
+  white-space: nowrap;
+  margin-left: auto;
 }
 
 /* ── Botones de cantidad ──────────────────────────────────── */
@@ -259,25 +281,71 @@ body  {
   gap: 5px;
 }
 
+/* Grid de 3 cols: nombre | cantidad | monto */
 .resumen-items li {
-  font-size: 0.87rem;
-  color: var(--text);
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0 14px;
+  align-items: baseline;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
 }
 
-.resumen-items li .qty-badge {
-  font-weight: 800;
-  color: var(--red);
+.resumen-items li:last-child { border-bottom: none; }
+
+.resumen-nombre {
+  font-size: 0.84rem;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.resumen-qty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
   white-space: nowrap;
 }
 
-.resumen-total {
+.resumen-subtotal {
+  font-size: 0.87rem;
+  font-weight: 800;
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+  min-width: 72px;
+}
+
+/* Fila TOTAL — mismo grid para alinear la columna de montos */
+.resumen-grand-total {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0 14px;
+  align-items: center;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(204,17,0,0.12);
-  font-size: 0.8rem;
+  border-top: 2px solid rgba(204,17,0,0.22);
+}
+
+.resumen-total-label {
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resumen-total-amount {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--red);
+  text-align: right;
+  white-space: nowrap;
+  min-width: 72px;
+}
+
+.resumen-count {
+  margin-top: 8px;
+  font-size: 0.76rem;
   color: var(--text-muted);
 }
 

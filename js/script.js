@@ -73,7 +73,7 @@ function crearFilaProducto(producto) {
   row.dataset.cantidad  = '0';
 
   const precioHtml = producto.precio_mayorista
-    ? `<span class="product-price">$ ${formatPrecio(producto.precio_mayorista)}</span>`
+    ? `<span class="product-price">$ ${formatPrecio(producto.precio_mayorista)} <small>c/u</small></span>`
     : '';
 
   const botonesHtml = CANTIDADES.map(c =>
@@ -89,13 +89,27 @@ function crearFilaProducto(producto) {
       <span class="product-name">${escapeHtml(producto.nombre)}</span>
       ${precioHtml}
     </div>
-    <div class="qty-buttons">${botonesHtml}</div>`;
+    <div class="product-qty-row">
+      <div class="qty-buttons">${botonesHtml}</div>
+      <span class="product-row-total hidden"></span>
+    </div>`;
+
+  const totalEl = row.querySelector('.product-row-total');
 
   row.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       row.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      row.dataset.cantidad = btn.dataset.qty;
+      const qty = Number(btn.dataset.qty);
+      row.dataset.cantidad = qty;
+
+      if (qty > 0 && producto.precio_mayorista) {
+        totalEl.textContent = '= $ ' + formatPrecio(qty * producto.precio_mayorista);
+        totalEl.classList.remove('hidden');
+      } else {
+        totalEl.classList.add('hidden');
+      }
+
       actualizarResumen();
     });
   });
@@ -113,17 +127,31 @@ function actualizarResumen() {
     return;
   }
 
-  const liItems = pedido.map(p =>
-    `<li>
-      <span>${escapeHtml(p.nombre)}</span>
-      <span class="qty-badge">${p.cantidad} u.</span>
-    </li>`
-  ).join('');
+  const liItems = pedido.map(p => {
+    const subtotalStr = p.precio_mayorista > 0
+      ? `$ ${formatPrecio(p.precio_mayorista * p.cantidad)}`
+      : '';
+    return `<li>
+      <span class="resumen-nombre">${escapeHtml(p.nombre)}</span>
+      <span class="resumen-qty">${p.cantidad} u.</span>
+      <span class="resumen-subtotal">${subtotalStr}</span>
+    </li>`;
+  }).join('');
+
+  const totalPedido = pedido.reduce((s, p) => s + (p.precio_mayorista || 0) * p.cantidad, 0);
+  const totalHtml = totalPedido > 0
+    ? `<div class="resumen-grand-total">
+         <span class="resumen-total-label">Total</span>
+         <span></span>
+         <span class="resumen-total-amount">$ ${formatPrecio(totalPedido)}</span>
+       </div>`
+    : '';
 
   resumen.innerHTML = `
     <p class="resumen-title">Tu pedido</p>
     <ul class="resumen-items">${liItems}</ul>
-    <p class="resumen-total">${pedido.length} producto${pedido.length !== 1 ? 's' : ''} seleccionado${pedido.length !== 1 ? 's' : ''}</p>`;
+    ${totalHtml}
+    <p class="resumen-count">${pedido.length} producto${pedido.length !== 1 ? 's' : ''} seleccionado${pedido.length !== 1 ? 's' : ''}</p>`;
 
   resumen.classList.remove('hidden');
 }
@@ -131,12 +159,16 @@ function actualizarResumen() {
 // ── Devuelve solo los productos con cantidad > 0 ───────────────
 function obtenerProductosPedido() {
   return Array.from(document.querySelectorAll('.product-row'))
-    .map(row => ({
-      codigo:    row.dataset.codigo,
-      nombre:    row.dataset.nombre,
-      categoria: row.dataset.categoria,
-      cantidad:  Number(row.dataset.cantidad || 0),
-    }))
+    .map(row => {
+      const meta = productosData.find(p => p.codigo === row.dataset.codigo);
+      return {
+        codigo:           row.dataset.codigo,
+        nombre:           row.dataset.nombre,
+        categoria:        row.dataset.categoria,
+        cantidad:         Number(row.dataset.cantidad || 0),
+        precio_mayorista: meta?.precio_mayorista || 0,
+      };
+    })
     .filter(p => p.cantidad > 0);
 }
 
