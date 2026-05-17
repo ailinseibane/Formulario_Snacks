@@ -2,111 +2,361 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Detalle de Pedido</title>
+  <title>Remito — Snack Fan</title>
   <style>
+    /* ── Variables ────────────────────────── */
+    :root {
+      --red:    #CC1100;
+      --yellow: #FFE500;
+      --gray-light: #F5F5F5;
+      --border: #DDDDDD;
+      --text:   #1A1A1A;
+      --muted:  #666666;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 40px;
-      background: #f4f4f8;
-      color: #333;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #EEEEEE;
+      color: var(--text);
+      font-size: 13px;
     }
-    .container {
+
+    .page {
       max-width: 800px;
-      margin: auto;
+      margin: 32px auto;
       background: #fff;
-      border-radius: 12px;
-      padding: 30px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
     }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
+
+    /* ── Encabezado ───────────────────────── */
+    .header {
+      background: var(--yellow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      gap: 16px;
     }
-    .logo img {
-      height: 80px;
+
+    .header-logo img {
+      height: 70px;
+      display: block;
     }
-    h1 {
-      text-align: center;
-      color: #2b2d42;
-      margin-bottom: 10px;
+
+    .header-title {
+      text-align: right;
     }
-    .info {
+
+    .header-title h1 {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .header-title .codigo-pedido {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #333;
+      margin-top: 4px;
+    }
+
+    .header-title .codigo-valor {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: var(--red);
+    }
+
+    /* ── Franja roja de estado ────────────── */
+    .status-bar {
+      background: var(--red);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 28px;
       display: flex;
       justify-content: space-between;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      font-size: 16px;
     }
-    .info div {
-      margin: 5px 0;
+
+    /* ── Cuerpo ───────────────────────────── */
+    .body {
+      padding: 24px 28px;
     }
+
+    /* ── Grid de info ─────────────────────── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .info-cell {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-cell:nth-child(odd) {
+      border-right: 1px solid var(--border);
+    }
+
+    .info-cell:nth-last-child(-n+2) {
+      border-bottom: none;
+    }
+
+    .info-cell.full {
+      grid-column: 1 / -1;
+      border-right: none;
+    }
+
+    .info-label {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 2px;
+    }
+
+    .info-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── Tabla de productos ───────────────── */
+    .section-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      margin-bottom: 20px;
     }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      font-size: 14px;
+
+    thead tr {
+      background: var(--gray-light);
+    }
+
+    th {
+      padding: 9px 12px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      border-bottom: 2px solid var(--border);
       text-align: left;
     }
-    th {
-      background-color: #e0e0e0;
+
+    th.right, td.right { text-align: right; }
+    th.center, td.center { text-align: center; }
+
+    td {
+      padding: 9px 12px;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
     }
-    .total {
-      text-align: right;
-      font-size: 18px;
-      margin-top: 20px;
-      font-weight: bold;
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:nth-child(even) td {
+      background: #FAFAFA;
     }
-    .observaciones {
-      margin-top: 20px;
+
+    /* ── Total ────────────────────────────── */
+    .total-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .total-box {
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      min-width: 220px;
+    }
+
+    .total-box-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: var(--gray-light);
+    }
+
+    .total-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .total-amount {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: var(--red);
+    }
+
+    /* ── Observaciones ────────────────────── */
+    .obs-box {
+      background: var(--gray-light);
+      border-left: 3px solid var(--border);
+      border-radius: 0 4px 4px 0;
+      padding: 10px 14px;
+      margin-bottom: 24px;
+      font-size: 0.88rem;
+      color: var(--text);
+      min-height: 36px;
+    }
+
+    .obs-box .info-label { margin-bottom: 4px; }
+
+    /* ── Pie ──────────────────────────────── */
+    .footer {
+      border-top: 1.5px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--gray-light);
+    }
+
+    .footer-brand {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .footer-legal {
+      font-size: 0.72rem;
+      color: var(--muted);
       font-style: italic;
+    }
+
+    /* ── Print ────────────────────────────── */
+    @media print {
+      body { background: #fff; }
+      .page { box-shadow: none; border-radius: 0; margin: 0; }
+      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .status-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-<img src="https://acdn-us.mitiendanube.com/stores/005/821/939/themes/common/logo-1951200950-1739356298-6be1913107e967b9582522cb6ccf771a1739356298.png?0" alt="Logo">
+  <div class="page">
+
+    <!-- Encabezado -->
+    <div class="header">
+      <div class="header-logo">
+        <img src="https://acdn-us.mitiendanube.com/stores/005/821/939/themes/common/logo-1951200950-1739356298-6be1913107e967b9582522cb6ccf771a1739356298.png?0" alt="Snack Fan">
+      </div>
+      <div class="header-title">
+        <h1>Remito de venta</h1>
+        <div class="codigo-pedido">Código de pedido</div>
+        <div class="codigo-valor" id="CodigoPedido">—</div>
+      </div>
     </div>
 
-    <h1>DETALLE DE PEDIDO</h1>
-
-    <div class="info">
-      <div>📅 <strong>Fecha:</strong> <span id="Fecha"></span></div>
-      <div>👤 <strong>Cliente:</strong> <span id="Cliente"></span></div>
-      <div>🗺️ <strong>Domicilio de entrega:</strong> <span id="Domicilio"></span></div>
-      <div>📞 <strong>Teléfono:</strong> <span id="Telefono"></span></div>
-      <div>📦 <strong>Estado:</strong> <span id="Estado"></span></div>
-      <div>🚚 <strong>Tipo de entrega:</strong> <span id="TipoEntrega"></span></div>
-      <div>🧾 <strong>Forma de pago:</strong> <span id="FormaPago"></span></div>
-      <div>🧑‍💼 <strong>Vendedor:</strong> <span id="Vendedor"></span></div>
+    <!-- Franja de estado -->
+    <div class="status-bar">
+      <span id="Estado">—</span>
+      <span id="Fecha">—</span>
     </div>
 
-    <div class="observaciones"><strong>📝 Observaciones:</strong> <span id="Observaciones"></span></div>
+    <div class="body">
 
-    <table id="tabla-productos">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Descripción</th>
-          <th>Cant.</th>
-          <th>Precio unitario</th>
-          <th>Desc.</th>
-          <th>Precio final</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+      <!-- Info del pedido -->
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="info-label">👤 Cliente</div>
+          <div class="info-value" id="Cliente">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">📞 Teléfono</div>
+          <div class="info-value" id="Telefono">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">🚚 Tipo de entrega</div>
+          <div class="info-value" id="TipoEntrega">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">💳 Forma de pago</div>
+          <div class="info-value" id="FormaPago">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">🗺️ Domicilio de entrega</div>
+          <div class="info-value" id="Domicilio">—</div>
+        </div>
+        <div class="info-cell">
+          <div class="info-label">🧑‍💼 Vendedor</div>
+          <div class="info-value" id="Vendedor">—</div>
+        </div>
+      </div>
 
-    <div class="total">💰 Total pedido: $<span id="TotalPedido"></span></div>
+      <!-- Observaciones -->
+      <div class="obs-box">
+        <div class="info-label">Observaciones</div>
+        <span id="Observaciones"></span>
+      </div>
 
-    <div style="margin-top: 30px; padding-top: 16px; border-top: 1px solid #ddd; text-align: center; font-size: 12px; color: #888; font-style: italic;">
-      Documento no válido como factura
+      <!-- Tabla de productos -->
+      <div class="section-title">Detalle del pedido</div>
+      <table id="tabla-productos">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th class="center">Cant.</th>
+            <th class="right">Precio unit.</th>
+            <th class="center">Desc.</th>
+            <th class="right">Total</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <!-- Total -->
+      <div class="total-row">
+        <div class="total-box">
+          <div class="total-box-inner">
+            <span class="total-label">Total pedido</span>
+            <span class="total-amount">$ <span id="TotalPedido">—</span></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /body -->
+
+    <!-- Pie -->
+    <div class="footer">
+      <span class="footer-brand">Snack Fan Distribuidora</span>
+      <span class="footer-legal">Documento no válido como factura</span>
     </div>
-  </div>
+
+  </div><!-- /page -->
 
   <script>
     function getURLParameter(name) {
@@ -118,40 +368,46 @@
 
     function getParamArray(name) {
       const raw = getURLParameter(name);
-      return raw ? raw.split(",") : [];
+      return raw ? raw.split(',') : [];
     }
 
-    document.getElementById("Fecha").innerText = getURLParameter("fecha");
-    document.getElementById("Cliente").innerText = getURLParameter("cliente");
-    document.getElementById("Estado").innerText = getURLParameter("estado");
-    document.getElementById("Observaciones").innerText = getURLParameter("observaciones");
-    document.getElementById("TotalPedido").innerText = getURLParameter("total");
-    document.getElementById("Domicilio").innerText = getURLParameter("domicilio");
-    document.getElementById("Telefono").innerText = getURLParameter("telefono");
-    document.getElementById("TipoEntrega").innerText = getURLParameter("tipo_entrega");
-    document.getElementById("FormaPago").innerText = getURLParameter("forma_pago");
-    document.getElementById("Vendedor").innerText = getURLParameter("vendedor");
+    function set(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val || '—';
+    }
 
-    const codigos = getParamArray("codigos");
-    const descripciones = getParamArray("descripciones");
-    const cantidades = getParamArray("cantidades");
-    const preciosUnitarios = getParamArray("preciosUnitarios");
-    const descuentos = getParamArray("descuentos");
-    const preciosFinales = getParamArray("preciosFinales");
+    set('CodigoPedido',  getURLParameter('codigo'));
+    set('Fecha',         getURLParameter('fecha'));
+    set('Cliente',       getURLParameter('cliente'));
+    set('Estado',        getURLParameter('estado'));
+    set('Observaciones', getURLParameter('observaciones'));
+    set('TotalPedido',   getURLParameter('total'));
+    set('Domicilio',     getURLParameter('domicilio'));
+    set('Telefono',      getURLParameter('telefono'));
+    set('TipoEntrega',   getURLParameter('tipo_entrega'));
+    set('FormaPago',     getURLParameter('forma_pago'));
+    set('Vendedor',      getURLParameter('vendedor'));
 
-    const tablaBody = document.querySelector("#tabla-productos tbody");
+    const codigos         = getParamArray('codigos');
+    const descripciones   = getParamArray('descripciones');
+    const cantidades      = getParamArray('cantidades');
+    const preciosUnitarios = getParamArray('preciosUnitarios');
+    const descuentos      = getParamArray('descuentos');
+    const preciosFinales  = getParamArray('preciosFinales');
+
+    const tbody = document.querySelector('#tabla-productos tbody');
 
     for (let i = 0; i < codigos.length; i++) {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${codigos[i]}</td>
-        <td>${descripciones[i]}</td>
-        <td>${cantidades[i]}</td>
-        <td>$${preciosUnitarios[i]}</td>
-        <td>${descuentos[i]}%</td>
-        <td>$${preciosFinales[i]}</td>
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${codigos[i] || ''}</td>
+        <td>${descripciones[i] || ''}</td>
+        <td class="center">${cantidades[i] || ''}</td>
+        <td class="right">$ ${preciosUnitarios[i] || ''}</td>
+        <td class="center">${descuentos[i] || 0}%</td>
+        <td class="right">$ ${preciosFinales[i] || ''}</td>
       `;
-      tablaBody.appendChild(row);
+      tbody.appendChild(tr);
     }
   </script>
 </body>

@@ -153,7 +153,7 @@ function grabarPedido(data) {
       data.nombre,      // Proveedor/Cliente
       p.codigo,         // Codigo
       'VENTA',          // Tipo de movimiento
-      fecha,            // Fecha
+      fechahora,        // Fecha
       Number(p.cantidad), // Cantidad
       precioUnit,       // Precio lista
       0,                // % descuento
