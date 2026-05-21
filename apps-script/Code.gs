@@ -118,7 +118,7 @@ function grabarPedido(data) {
   // Link generado, Imagen generada
   sheetTx.appendRow([
     codigo,           // UniqueID
-    fechahora,        // Fecha
+    fecha,            // Fecha
     data.nombre,      // Proveedor/Cliente
     'VENTA',          // Tipo de transaccion
     'MAYORISTA',      // Precio
@@ -135,7 +135,6 @@ function grabarPedido(data) {
     fechahora,        // Fechahora
     '',               // Link generado
     '',               // Imagen generada
-    data.tipo_entrega || '', // Tipo de entrega
   ]);
 
   // ── N filas en inventory ──────────────────────────────────
@@ -153,10 +152,10 @@ function grabarPedido(data) {
       data.nombre,      // Proveedor/Cliente
       p.codigo,         // Codigo
       'VENTA',          // Tipo de movimiento
-      fechahora,        // Fecha
+      fecha,            // Fecha
       Number(p.cantidad), // Cantidad
       precioUnit,       // Precio lista
-      0,                // % descuento
+      '',               // % descuento
       precioUnit,       // Precio unitario
       p.nombre,         // Detalle producto
       p.categoria,      // Categoría
