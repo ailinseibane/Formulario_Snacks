@@ -214,6 +214,28 @@ function testPrecio() {
   });
 }
 
+// ── Diagnóstico: verificar categorías y cantidades ───────────
+function testCategorias() {
+  const ss = SpreadsheetApp.openById(APPSHEET_SHEET_ID);
+
+  const sheetCat = ss.getSheetByName(CATEGORIES_TAB);
+  if (!sheetCat) { Logger.log('ERROR: No se encontró la pestaña "' + CATEGORIES_TAB + '"'); return; }
+
+  const [catHeaders, ...catRows] = sheetCat.getDataRange().getValues();
+  Logger.log('Encabezados Categories: ' + JSON.stringify(catHeaders));
+  Logger.log('Índice columna "' + COL_UNIDADES + '": ' + catHeaders.indexOf(COL_UNIDADES));
+
+  catRows.forEach((r, i) => {
+    Logger.log('Fila ' + (i+2) + ' — col[0]: "' + r[0] + '" | Unidades raw: "' + r[catHeaders.indexOf(COL_UNIDADES)] + '"');
+  });
+
+  const sheetItems = ss.getSheetByName(PRODUCTOS_TAB_NAME);
+  const [itemHeaders, ...itemRows] = sheetItems.getDataRange().getValues();
+  const idxCat = itemHeaders.indexOf(COL_CATEGORIA);
+  const categoriasEnItems = [...new Set(itemRows.map(r => String(r[idxCat]).trim()))];
+  Logger.log('Categorías en items: ' + JSON.stringify(categoriasEnItems));
+}
+
 // ── Helper: respuesta JSON ────────────────────────────────────
 function responder(obj) {
   return ContentService
