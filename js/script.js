@@ -1,7 +1,7 @@
 // ── Configuración ─────────────────────────────────────────────
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRD4JOYyAtXi4-F7aDZ0BCUmruPAOXJhs47PVnz8wNpwINEYwjIlYbu3m0akadYAY9/exec';
 
-// Opciones de cantidad disponibles para todos los productos
+// Fallback de cantidades si la categoría no tiene configuración
 const CANTIDADES = [0, 1, 6, 12, 24, 48, 72, 96];
 
 // ── Estado de la app ───────────────────────────────────────────
@@ -76,7 +76,8 @@ function crearFilaProducto(producto) {
     ? `<span class="product-price">$ ${formatPrecio(producto.precio_mayorista)} <small>c/u</small></span>`
     : '';
 
-  const botonesHtml = CANTIDADES.map(c =>
+  const opciones = producto.cantidades || CANTIDADES;
+  const botonesHtml = opciones.map(c =>
     `<button type="button"
              class="qty-btn${c === 0 ? ' qty-btn-zero active' : ''}"
              data-qty="${c}">
@@ -177,9 +178,11 @@ async function handleSubmit(e) {
   e.preventDefault();
   limpiarErrores();
 
-  const nombre    = document.getElementById('nombre').value.trim();
-  const productos = obtenerProductosPedido();
-  let valido      = true;
+  const nombre       = document.getElementById('nombre').value.trim();
+  const telefono     = document.getElementById('telefono').value.trim();
+  const tipo_entrega = document.getElementById('tipo_entrega').value;
+  const productos    = obtenerProductosPedido();
+  let valido         = true;
 
   if (!nombre) {
     mostrarErrorCampo('nombre', 'El nombre es obligatorio.');
@@ -203,14 +206,14 @@ async function handleSubmit(e) {
 
   const payload = {
     nombre,
-    telefono:      document.getElementById('telefono').value.trim(),
+    telefono,
+    tipo_entrega,
     direccion:     document.getElementById('direccion').value.trim(),
     observaciones: document.getElementById('observaciones').value.trim(),
     productos,
   };
 
   try {
-    // Intentar con lectura de respuesta primero
     let codigoPedido = null;
     let enviado      = false;
 
@@ -228,7 +231,6 @@ async function handleSubmit(e) {
         throw new Error(data.error || 'Respuesta inesperada del servidor');
       }
     } catch (corsErr) {
-      // Si falla por CORS/redirect de Apps Script, reintentar sin leer respuesta
       console.warn('Reintentando sin CORS:', corsErr.message);
       await fetch(APPS_SCRIPT_URL, {
         method:  'POST',
