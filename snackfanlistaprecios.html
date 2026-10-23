@@ -95,6 +95,12 @@
       border-radius: 8px;
       background: #f2f2f2;
       border: 1px solid #ccc;
+      cursor: zoom-in;
+      transition: transform 0.15s;
+    }
+
+    .product img:hover {
+      transform: scale(1.05);
     }
 
     .product-info {
@@ -119,33 +125,94 @@
       font-weight: bold;
     }
 
+    /* ---- Lightbox (imagen ampliada) ---- */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0,0,0,0.85);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+      padding: 0 20px;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: #800020;
+      color: white;
+      font-size: 26px;
+      line-height: 44px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .lightbox-close:hover {
+      background: #a3002a;
+      transform: scale(1.1);
+    }
+
     .whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 999;
-  background: #25D366;
-  border-radius: 50%;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  transition: transform 0.2s;
-}
-.whatsapp-float img {
-  width: 48px;
-  height: 48px;
-  display: block;
-}
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      background: #25D366;
+      border-radius: 50%;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .whatsapp-float img {
+      width: 48px;
+      height: 48px;
+      display: block;
+    }
 
-.whatsapp-float:hover {
-  transform: scale(1.1);
-}
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+    }
 
-@media print {
-  .whatsapp-float {
-    display: none;
-  }
-}
-
+    @media print {
+      .whatsapp-float,
+      .lightbox {
+        display: none !important;
+      }
+    }
 
     @media print {
       body {
@@ -162,11 +229,19 @@
     }
   </style>
 </head>
-  
+
 <body>
   <a href="https://wa.me/5492364316825" class="whatsapp-float" target="_blank" aria-label="Contactar por WhatsApp">
-  <img src="https://cdn-icons-png.flaticon.com/512/220/220236.png" alt="WhatsApp" />
-</a>
+    <img src="https://cdn-icons-png.flaticon.com/512/220/220236.png" alt="WhatsApp" />
+  </a>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada">
+    <button type="button" class="lightbox-close" id="lightboxClose" aria-label="Cerrar">&times;</button>
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
   <div class="container">
     <div class="topbar">
       <div class="logo">
@@ -204,6 +279,44 @@
     const limpio = valor.replace(/[^0-9.,-]/g, "").replace(",", ".");
     return parseFloat(limpio) || 0;
   }
+
+  // ---- Lightbox ----
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lightboxCaption = document.getElementById("lightboxCaption");
+  const lightboxClose = document.getElementById("lightboxClose");
+
+  function abrirLightbox(src, nombre) {
+    lightboxImg.src = src;
+    lightboxImg.alt = nombre;
+    lightboxCaption.textContent = nombre;
+    lightbox.classList.add("open");
+    document.body.style.overflow = "hidden"; // bloquea el scroll de fondo
+  }
+
+  function cerrarLightbox() {
+    lightbox.classList.remove("open");
+    lightboxImg.src = "";
+    document.body.style.overflow = "";
+  }
+
+  lightboxClose.addEventListener("click", cerrarLightbox);
+
+  // Cerrar al hacer click fuera de la imagen
+  lightbox.addEventListener("click", e => {
+    if (e.target === lightbox) cerrarLightbox();
+  });
+
+  // Cerrar con la tecla Escape
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && lightbox.classList.contains("open")) cerrarLightbox();
+  });
+
+  // Delegación: un solo listener para todas las imágenes de producto
+  document.getElementById("contenido").addEventListener("click", e => {
+    const img = e.target.closest(".product img");
+    if (img) abrirLightbox(img.src, img.alt);
+  });
 
   fetch(sheetURL)
     .then(response => response.text())
@@ -255,7 +368,7 @@
         grupo[categoria].forEach(p => {
           bloque.innerHTML += `
             <div class="product">
-              <img src="${getImageUrl(p.imagen)}" alt="${p.nombre}" onerror="this.src='https://via.placeholder.com/90x90?text=No+Img'">
+              <img src="${getImageUrl(p.imagen)}" alt="${p.nombre}" title="Click para ampliar" onerror="this.src='https://via.placeholder.com/90x90?text=No+Img'">
               <div class="product-info">
                 <div class="product-name">${p.nombre}</div>
                 ${p.descripcion ? `<div class="product-description">${p.descripcion}</div>` : ""}
