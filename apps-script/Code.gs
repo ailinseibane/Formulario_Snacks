@@ -34,13 +34,28 @@ function doGet(e) {
 }
 
 // ── POST: recibe y graba un pedido ────────────────────────────
+// El formulario manda un pedido_id por intento. Si llega dos veces el mismo
+// (por ejemplo, el cliente reintenta porque no le llegó la respuesta), se
+// devuelve el código ya grabado en vez de crear un pedido duplicado.
+// El lock evita que dos pedidos simultáneos reciban el mismo código.
 function doPost(e) {
+  const lock = LockService.getScriptLock();
   try {
     const payload = JSON.parse(e.postData.contents);
-    const codigo  = grabarPedido(payload);
+    lock.waitLock(30000);
+
+    const cache = CacheService.getScriptCache();
+    const clave = payload.pedido_id ? 'pedido_' + String(payload.pedido_id).slice(0, 100) : null;
+    const previo = clave ? cache.get(clave) : null;
+    if (previo) return responder({ success: true, codigo: previo, repetido: true });
+
+    const codigo = grabarPedido(payload);
+    if (clave) cache.put(clave, codigo, 21600); // 6 horas
     return responder({ success: true, codigo: codigo });
   } catch (err) {
     return responder({ success: false, error: err.message });
+  } finally {
+    lock.releaseLock();
   }
 }
 

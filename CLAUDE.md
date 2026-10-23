@@ -21,7 +21,6 @@ This is a static frontend + Google Apps Script backend. There is no build step.
 ```
 index.html             ← Wholesale order form (client-facing)
 ventasnackfan.html     ← Print-ready sales remito, fed entirely by URL params
-snackfanlistaprecios.html ← Price list (standalone)
 css/style.css          ← All styles for index.html (brand: yellow #FFE500, red #CC1100)
 js/script.js           ← All JS for index.html
 apps-script/Code.gs    ← Google Apps Script: REST API + Sheets writer + email

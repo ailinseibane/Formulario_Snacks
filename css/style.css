@@ -32,14 +32,16 @@ body  {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  transition: padding 0.2s ease;
 }
 
 .logo-img {
-  max-height: 72px;
+  height: 72px;
   max-width: 220px;
   object-fit: contain;
   display: block;
   margin: 0 auto;
+  transition: height 0.2s ease;
 }
 
 .header-tagline {
@@ -49,6 +51,23 @@ body  {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin-top: 6px;
+  max-height: 2em;
+  overflow: hidden;
+  transition: max-height 0.2s ease, margin 0.2s ease, opacity 0.2s ease;
+}
+
+@media (max-width: 500px) {
+  .header      { padding: 10px 16px 8px; }
+  .logo-img    { height: 52px; }
+}
+
+/* Al bajar, el encabezado se achica a una franja con el logo chico */
+.header.compact             { padding: 6px 16px; }
+.header.compact .logo-img   { height: 34px; }
+.header.compact .header-tagline {
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
 }
 
 /* ── Layout ───────────────────────────────────────────────── */
@@ -186,6 +205,8 @@ body  {
   margin-bottom: 8px;
 }
 
+.product-row.selected .product-name { font-weight: 700; }
+
 .product-name {
   font-size: 0.9rem;
   font-weight: 500;
@@ -224,26 +245,29 @@ body  {
 }
 
 /* ── Botones de cantidad ──────────────────────────────────── */
+/* Grilla pareja: los botones ocupan todo el ancho y nunca queda
+   uno solo y más chico en la última línea */
 .qty-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+  gap: 6px;
+  flex: 1 1 100%;
 }
 
 .qty-btn {
-  padding: 4px 9px;
+  min-height: 42px;
+  padding: 0 6px;
   border: 1.5px solid var(--border);
-  border-radius: 20px;
+  border-radius: 10px;
   background: #fff;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.12s;
-  line-height: 1.5;
-  min-width: 34px;
   text-align: center;
   font-family: inherit;
+  touch-action: manipulation;
 }
 
 .qty-btn:hover:not(.qty-btn-zero) {
@@ -519,3 +543,169 @@ body  {
   color: var(--text-muted);
   margin-top: 8px;
 }
+
+/* ── Buscador de productos ────────────────────────────────── */
+.buscador {
+  position: sticky;
+  top: var(--header-h, 0px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  padding: 0 8px 0 14px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.buscador:focus-within {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(204,17,0,0.1), var(--shadow);
+}
+
+.buscador-icon { color: var(--text-muted); flex-shrink: 0; }
+
+.buscador input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 14px 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text);
+}
+
+.buscador input::-webkit-search-cancel-button { display: none; }
+
+.buscador-limpiar {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #F1F5F9;
+  color: var(--text-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.buscador-limpiar:hover { background: #E2E8F0; color: var(--text); }
+
+.empty-search {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Aviso de pedido recuperado ───────────────────────────── */
+.aviso-borrador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  background: #FFF8C5;
+  border: 1.5px solid #F2D600;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 0.88rem;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--red);
+  font-weight: 700;
+  font-size: 0.88rem;
+  font-family: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+  .card { padding: 18px 16px; }
+}
+
+/* ── Barra fija con el total ──────────────────────────────── */
+.barra-pedido {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  background: var(--bg-card);
+  border-top: 3px solid var(--yellow);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  transform: translateY(0);
+  transition: transform 0.2s ease;
+}
+
+.barra-pedido.oculta { transform: translateY(110%); }
+
+.barra-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.barra-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.barra-cantidad {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.barra-total {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--red);
+  white-space: nowrap;
+}
+
+.barra-btn {
+  flex-shrink: 0;
+  min-height: 46px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--red) 0%, #E02010 100%);
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(204,17,0,0.3);
+}
+
+.barra-btn:active { transform: translateY(1px); }
+
+/* Deja lugar para la barra al final de la página */
+body.con-barra .main { padding-bottom: 120px; }
