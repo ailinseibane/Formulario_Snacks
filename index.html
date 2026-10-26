@@ -20,9 +20,29 @@
   <main class="main">
     <form id="pedidoForm" novalidate>
 
+      <!-- Aviso de pedido recuperado -->
+      <div id="avisoBorrador" class="aviso-borrador hidden" role="status">
+        <span>Recuperamos el pedido que dejaste sin enviar.</span>
+        <button type="button" id="btnDescartar" class="btn-link">Empezar de nuevo</button>
+      </div>
+
+      <!-- Buscador + categorías (quedan fijos al bajar) -->
+      <div id="buscadorCard" class="buscador-sticky hidden">
+        <div class="buscador">
+          <label for="buscador" class="visually-hidden">Buscar producto</label>
+          <svg class="buscador-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="search" id="buscador" placeholder="Buscar producto…" autocomplete="off" enterkeyhint="search">
+          <button type="button" id="buscadorLimpiar" class="buscador-limpiar hidden" aria-label="Borrar búsqueda">×</button>
+        </div>
+        <nav id="categoriasNav" class="categorias-nav" aria-label="Categorías"></nav>
+      </div>
+
+      <!-- Productos (se renderizan dinámicamente) -->
+      <div id="productosContenedor"></div>
+
       <!-- Datos del cliente -->
-      <section class="card">
-        <h2 class="card-title">Datos del cliente</h2>
+      <section class="card" id="datosCliente">
+        <h2 class="card-title">Tus datos</h2>
         <div class="form-grid">
 
           <div class="field required">
@@ -62,23 +82,6 @@
         </div>
       </section>
 
-      <!-- Aviso de pedido recuperado -->
-      <div id="avisoBorrador" class="aviso-borrador hidden" role="status">
-        <span>Recuperamos el pedido que dejaste sin enviar.</span>
-        <button type="button" id="btnDescartar" class="btn-link">Empezar de nuevo</button>
-      </div>
-
-      <!-- Buscador -->
-      <div id="buscadorCard" class="buscador hidden">
-        <label for="buscador" class="visually-hidden">Buscar producto</label>
-        <svg class="buscador-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="search" id="buscador" placeholder="Buscar producto…" autocomplete="off" enterkeyhint="search">
-        <button type="button" id="buscadorLimpiar" class="buscador-limpiar hidden" aria-label="Borrar búsqueda">×</button>
-      </div>
-
-      <!-- Productos (se renderizan dinámicamente) -->
-      <div id="productosContenedor"></div>
-
       <!-- Resumen + Enviar -->
       <div class="submit-section">
         <div id="resumen" class="resumen hidden"></div>
@@ -101,7 +104,7 @@
         <span class="barra-cantidad" id="barraCantidad"></span>
         <span class="barra-total" id="barraTotal"></span>
       </div>
-      <button type="button" id="btnVerPedido" class="barra-btn">Ver pedido</button>
+      <button type="button" id="btnVerPedido" class="barra-btn">Continuar</button>
     </div>
   </div>
 

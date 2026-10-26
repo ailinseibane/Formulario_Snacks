@@ -20,34 +20,18 @@ let envioVisible = false;
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('pedidoForm').addEventListener('submit', handleSubmit);
 
-  // El buscador queda fijo justo debajo del encabezado (que también es fijo)
-  const ajustarAlturaHeader = () => {
-    const h = document.querySelector('.header').offsetHeight;
-    document.documentElement.style.setProperty('--header-h', h + 'px');
-  };
-  const header = document.querySelector('.header');
-  ajustarAlturaHeader();
-  window.addEventListener('resize', ajustarAlturaHeader);
-  if (window.ResizeObserver) new ResizeObserver(ajustarAlturaHeader).observe(header);
+  medirHeader();
+  window.addEventListener('resize', medirHeader);
+  document.querySelector('.logo-img').addEventListener('load', medirHeader);
 
-  // Encabezado compacto al bajar. Umbrales distintos para achicar y
-  // agrandar, así no titila cerca del límite.
   window.addEventListener('scroll', () => {
-    const y = window.scrollY;
-    if (y > 100) header.classList.add('compact');
-    else if (y < 10) header.classList.remove('compact');
+    aplicarEstadoHeader();
+    marcarCategoriaActiva();
+    actualizarVisibilidadDatos();
   }, { passive: true });
 
-  // La barra del total se oculta cuando el resumen ya está a la vista
-  const seccionEnvio = document.querySelector('.submit-section');
-  if (window.IntersectionObserver) {
-    new IntersectionObserver(([entry]) => {
-      envioVisible = entry.isIntersecting;
-      actualizarBarra();
-    }).observe(seccionEnvio);
-  }
   document.getElementById('btnVerPedido').addEventListener('click', () => {
-    seccionEnvio.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    irA(document.getElementById('datosCliente'), false);
   });
 
   // Cualquier cambio en los datos del cliente se guarda en el borrador
@@ -73,6 +57,69 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarProductos(borrador);
 });
 
+// ── Encabezado y desplazamiento ────────────────────────────────
+// El encabezado es fijo y se achica al bajar. Como no ocupa lugar en la
+// página, achicarlo no mueve el contenido. Se miden una vez sus dos
+// alturas para saber dónde va a quedar cada cosa.
+let alturaHeaderGrande = 0;
+let alturaHeaderChico  = 0;
+
+function medirHeader() {
+  const header    = document.querySelector('.header');
+  const compacto  = header.classList.contains('compact');
+  header.classList.add('sin-animacion');
+  header.classList.remove('compact');
+  alturaHeaderGrande = header.offsetHeight;
+  header.classList.add('compact');
+  alturaHeaderChico = header.offsetHeight;
+  header.classList.toggle('compact', compacto);
+  void header.offsetHeight; // aplica el estado antes de reactivar la animación
+  header.classList.remove('sin-animacion');
+
+  document.documentElement.style.setProperty('--header-full', alturaHeaderGrande + 'px');
+  aplicarEstadoHeader();
+}
+
+// Umbrales distintos para achicar y agrandar, así no titila cerca del límite
+function headerQuedaCompacto(y, compactoAhora) {
+  return y > 100 || (compactoAhora && y >= 10);
+}
+
+function aplicarEstadoHeader() {
+  const header   = document.querySelector('.header');
+  const compacto = headerQuedaCompacto(window.scrollY, header.classList.contains('compact'));
+  header.classList.toggle('compact', compacto);
+  document.documentElement.style.setProperty('--header-h',
+    (compacto ? alturaHeaderChico : alturaHeaderGrande) + 'px');
+}
+
+// Altura de lo que queda fijo arriba: encabezado y, si se pide, buscador
+function alturaFija(compacto, conBuscador) {
+  const bloque = document.getElementById('buscadorCard');
+  return (compacto ? alturaHeaderChico : alturaHeaderGrande) + (conBuscador ? bloque.offsetHeight : 0);
+}
+
+// Desplaza la página para que el elemento quede justo debajo de lo fijo
+function irA(el, conBuscador) {
+  const header   = document.querySelector('.header');
+  const absoluto = el.getBoundingClientRect().top + window.scrollY;
+  let top = absoluto - alturaFija(true, conBuscador) - 12;
+  if (!headerQuedaCompacto(top, header.classList.contains('compact'))) {
+    top = absoluto - alturaFija(false, conBuscador) - 12;
+  }
+  window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+}
+
+// La barra del total se oculta cuando ya se ven "Tus datos" o el resumen
+function actualizarVisibilidadDatos() {
+  const datos = document.getElementById('datosCliente');
+  const visible = datos.getBoundingClientRect().top < window.innerHeight - 40;
+  if (visible !== envioVisible) {
+    envioVisible = visible;
+    actualizarBarra();
+  }
+}
+
 // ── Carga productos desde Apps Script ─────────────────────────
 async function cargarProductos(borrador) {
   const contenedor = document.getElementById('productosContenedor');
@@ -95,6 +142,7 @@ async function cargarProductos(borrador) {
     renderProductos(data, contenedor);
     document.getElementById('buscadorCard').classList.remove('hidden');
     if (borrador) restaurarCantidades(borrador);
+    actualizarVisibilidadDatos();
   } catch (err) {
     contenedor.innerHTML = `
       <div class="error-state">
@@ -113,16 +161,30 @@ function renderProductos(productos, contenedor) {
   });
 
   contenedor.innerHTML = '';
+  const nav = document.getElementById('categoriasNav');
+  nav.innerHTML = '';
 
-  Object.entries(grupos).forEach(([categoria, items]) => {
+  Object.entries(grupos).forEach(([categoria, items], i) => {
     const card = document.createElement('section');
     card.className = 'card product-category';
+    card.id = 'categoria-' + i;
     card.innerHTML = `<h2 class="card-title">${escapeHtml(categoria)}</h2>
                       <div class="products-list"></div>`;
     const lista = card.querySelector('.products-list');
     items.forEach(p => lista.appendChild(crearFilaProducto(p)));
     contenedor.appendChild(card);
+
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'cat-chip';
+    chip.dataset.target = card.id;
+    chip.textContent = categoria;
+    chip.addEventListener('click', () => irA(card, true));
+    nav.appendChild(chip);
   });
+
+  // Con una sola categoría la fila de botones no aporta nada
+  nav.classList.toggle('hidden', Object.keys(grupos).length < 2);
 
   const vacio = document.createElement('div');
   vacio.id = 'sinResultados';
@@ -144,14 +206,11 @@ function crearFilaProducto(producto) {
     ? `<span class="product-price">$ ${formatPrecio(producto.precio_mayorista)} <small>c/u</small></span>`
     : '';
 
-  const opciones = producto.cantidades || CANTIDADES;
+  // El 0 ya no es un botón de la grilla: para sacar un producto
+  // aparece "Quitar" cuando tiene una cantidad elegida.
+  const opciones = (producto.cantidades || CANTIDADES).filter(c => Number(c) > 0);
   const botonesHtml = opciones.map(c =>
-    `<button type="button"
-             class="qty-btn${c === 0 ? ' qty-btn-zero active' : ''}"
-             data-qty="${c}"
-             aria-label="${c === 0 ? 'Quitar ' + escapeHtml(producto.nombre) : c + ' unidades'}">
-       ${c === 0 ? '×' : c}
-     </button>`
+    `<button type="button" class="qty-btn" data-qty="${c}" aria-label="${c} unidades">${c}</button>`
   ).join('');
 
   row.innerHTML = `
@@ -161,39 +220,41 @@ function crearFilaProducto(producto) {
     </div>
     <div class="product-qty-row">
       <div class="qty-buttons">${botonesHtml}</div>
-      <span class="product-row-total hidden"></span>
+      <div class="product-row-acciones hidden">
+        <button type="button" class="btn-quitar" aria-label="Quitar ${escapeHtml(producto.nombre)} del pedido">✕ Quitar</button>
+        <span class="product-row-total"></span>
+      </div>
     </div>`;
 
+  const elegir = qty => {
+    setCantidad(row, qty);
+    pedidoId = null;
+    actualizarResumen();
+    guardarBorrador();
+  };
+
   row.querySelectorAll('.qty-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setCantidad(row, Number(btn.dataset.qty));
-      pedidoId = null;
-      actualizarResumen();
-      guardarBorrador();
-    });
+    btn.addEventListener('click', () => elegir(Number(btn.dataset.qty)));
   });
+  row.querySelector('.btn-quitar').addEventListener('click', () => elegir(0));
 
   return row;
 }
 
 // ── Marca una cantidad en una fila y actualiza su subtotal ─────
 function setCantidad(row, qty) {
-  const btn = row.querySelector(`.qty-btn[data-qty="${qty}"]`);
-  if (!btn) return false;
+  const btn = qty > 0 ? row.querySelector(`.qty-btn[data-qty="${qty}"]`) : null;
+  if (qty > 0 && !btn) return false;
 
   row.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
   row.dataset.cantidad = qty;
   row.classList.toggle('selected', qty > 0);
 
   const producto = productosData.find(p => p.codigo === row.dataset.codigo);
-  const totalEl  = row.querySelector('.product-row-total');
-  if (qty > 0 && producto?.precio_mayorista) {
-    totalEl.textContent = '= $ ' + formatPrecio(qty * producto.precio_mayorista);
-    totalEl.classList.remove('hidden');
-  } else {
-    totalEl.classList.add('hidden');
-  }
+  row.querySelector('.product-row-acciones').classList.toggle('hidden', qty === 0);
+  row.querySelector('.product-row-total').textContent =
+    qty > 0 && producto?.precio_mayorista ? '= $ ' + formatPrecio(qty * producto.precio_mayorista) : '';
   return true;
 }
 
@@ -210,8 +271,11 @@ function filtrarProductos(texto) {
       if (coincide) visiblesCat++;
     });
     card.classList.toggle('hidden', visiblesCat === 0);
+    document.querySelector(`.cat-chip[data-target="${card.id}"]`)
+      ?.classList.toggle('hidden', visiblesCat === 0);
     visibles += visiblesCat;
   });
+  marcarCategoriaActiva();
 
   const vacio = document.getElementById('sinResultados');
   if (vacio) {
@@ -219,6 +283,26 @@ function filtrarProductos(texto) {
     vacio.classList.toggle('hidden', visibles > 0 || terminos.length === 0);
   }
   document.getElementById('buscadorLimpiar').classList.toggle('hidden', texto === '');
+}
+
+// Resalta el botón de la categoría que se está viendo
+function marcarCategoriaActiva() {
+  const compacto = document.querySelector('.header').classList.contains('compact');
+  const limite   = alturaFija(compacto, true) + 40;
+  let actual = null;
+  document.querySelectorAll('.product-category:not(.hidden)').forEach(card => {
+    if (card.getBoundingClientRect().top <= limite) actual = card.id;
+  });
+
+  document.querySelectorAll('.cat-chip').forEach(chip => {
+    const activo = chip.dataset.target === actual;
+    if (activo && !chip.classList.contains('active')) {
+      // Desliza la fila de botones para que el activo quede a la vista
+      const nav = chip.parentElement;
+      nav.scrollTo({ left: chip.offsetLeft - nav.clientWidth / 2 + chip.offsetWidth / 2, behavior: 'smooth' });
+    }
+    chip.classList.toggle('active', activo);
+  });
 }
 
 // Minúsculas y sin acentos, para que "turron" encuentre "Turrón"
